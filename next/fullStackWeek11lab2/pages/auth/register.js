@@ -1,0 +1,81 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import Card from '../../components/ui/Card';
+
+function RegisterPage() {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('Registration successful!');
+        router.push('/auth/login');
+      } else {
+        alert(data.detail || 'Registration failed');
+      }
+    } catch (error) {
+      alert('Network error');
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
+      <Card>
+        <h1>Register</h1>
+        <form onSubmit={handleRegister}>
+          <div style={{ marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+          </div>
+          <button
+            type="submit"
+            style={{ width: '100%', padding: '0.75rem', backgroundColor: 'rgb(10, 10, 51)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Register
+          </button>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+export default RegisterPage;

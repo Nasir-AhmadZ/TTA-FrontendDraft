@@ -1,0 +1,70 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import Card from '../../components/ui/Card';
+
+function LoginPage() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert('Login successful!');
+        router.push('/');
+      } else {
+        alert(data.detail || 'Login failed');
+      }
+    } catch (error) {
+      alert('Network error');
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
+      <Card>
+        <h1>Login</h1>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+          </div>
+          <button
+            type="submit"
+            style={{ width: '100%', padding: '0.75rem', backgroundColor: 'rgb(245, 173, 66)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Login
+          </button>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+export default LoginPage;

@@ -1,0 +1,13 @@
+{
+  "name": "week11lab2",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd node/microservices && npm start",
+    "frontend": "cd next/fullStackWeek11lab2 && npm run dev",
+    "install-all": "cd node/microservices && npm install && cd ../../next/fullStackWeek11lab2 && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}
