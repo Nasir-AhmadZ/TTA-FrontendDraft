@@ -12,8 +12,27 @@ export default function HamMenuContent(props) {
         return null
     }
 
-    function clicked(webAddress) {
+    async function clicked(webAddress) {
         globalCtx.updateGlobals({ cmd: 'hideHamMenu', newVal: true })
+        
+        // Handle logout
+        if (webAddress === '/auth/login') {
+            // Notify backend about logout
+            try {
+                await fetch('http://localhost:8000/api/auth/logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            } catch (error) {
+                console.error('Logout notification failed:', error)
+            }
+            
+            // Clear user session
+            globalCtx.updateGlobals({ cmd: 'username', newVal: null })
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('user')
+        }
+        
         router.push(webAddress)
     }
 

@@ -9,7 +9,7 @@ import { createContext, useState, useEffect } from 'react'
 const GlobalContext = createContext()
 
 export function GlobalContextProvider(props) {
-    const [globals, setGlobals] = useState({ aString: 'init val', count: 0, hideHamMenu: true, meetings: [], dataLoaded: false })
+    const [globals, setGlobals] = useState({ aString: 'init val', count: 0, hideHamMenu: true, meetings: [], dataLoaded: false, username: null })
 
     useEffect(() => {
         getAllMeetings()
@@ -35,6 +35,12 @@ export function GlobalContextProvider(props) {
             setGlobals((previousGlobals) => {
                 const newGlobals = JSON.parse(JSON.stringify(previousGlobals));
                 newGlobals.hideHamMenu = command.newVal; return newGlobals
+            })
+        }
+        if (command.cmd == 'setUsername') {
+            setGlobals((previousGlobals) => {
+                const newGlobals = JSON.parse(JSON.stringify(previousGlobals));
+                newGlobals.username = command.newVal; return newGlobals
             })
         }
         if (command.cmd == 'addMeeting') {

@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useRouter } from 'next/router';
 import Card from '../../components/ui/Card';
+import GlobalContext from '../store/globalContext';
 
 function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const globalCtx = useContext(GlobalContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -20,6 +22,7 @@ function LoginPage() {
       const data = await response.json();
       
       if (response.ok) {
+        globalCtx.updateGlobals({ cmd: 'setUsername', newVal: username });
         alert('Login successful!');
         router.push('/');
       } else {

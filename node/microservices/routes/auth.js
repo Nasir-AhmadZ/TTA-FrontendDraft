@@ -3,6 +3,10 @@ let router = express.Router();
 let Mongoose = require('mongoose').Mongoose;
 let Schema = require('mongoose').Schema;
 let crypto = require('crypto');
+const RabbitMQHelper = require('../utils/rabbitmq');
+require('dotenv').config();
+
+const rabbitMQ = new RabbitMQHelper();
 
 // MongoDB connection
 let mongoose = new Mongoose();
@@ -177,6 +181,22 @@ router.delete('/users/:username', async function (req, res) {
   }
 });
 
+// Logout user
+router.post('/logout', async function (req, res) {
+  try {
+    // Notify timetrack service about logout via RabbitMQ
+    try {
+      await rabbitMQ.publishMessage('user_logout', { action: 'logout' });
+    } catch (error) {
+      console.error('Failed to notify timetrack service via RabbitMQ:', error);
+    }
+    
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ detail: error.message });
+  }
+});
+
 // Login user
 router.post('/login', async function (req, res) {
   try {
@@ -190,6 +210,13 @@ router.post('/login', async function (req, res) {
     const isValid = verifyPassword(user.password_hash, user.salt, password);
     if (!isValid) {
       return res.status(400).json({ detail: "Invalid username or password" });
+    }
+    
+    // Notify timetrack service about logged-in user via RabbitMQ
+    try {
+      await rabbitMQ.publishMessage('user_login', { user_id: user._id.toString() });
+    } catch (error) {
+      console.error('Failed to notify timetrack service via RabbitMQ:', error);
     }
     
     const token = `token-${username}`;

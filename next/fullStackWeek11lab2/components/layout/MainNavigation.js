@@ -19,6 +19,11 @@ function MainNavigation() {
   globalCtx.theGlobalObject.meetings.forEach(element => {
     contents.push({title: element.title, webAddress: '/' + element.meetingId })
   });
+  
+  // Add logout option if user is logged in
+  if (globalCtx.theGlobalObject.username) {
+    contents.push({title: 'Logout', webAddress: '/auth/login'})
+  }
 
   return (
     <header className={classes.header}>
@@ -46,6 +51,9 @@ function MainNavigation() {
           </li>
         </ul>
       </nav>
+      {globalCtx.theGlobalObject.username && (
+        <div className={classes.username}>{globalCtx.theGlobalObject.username}</div>
+      )}
     </header>
   );
 }
