@@ -9,23 +9,7 @@ import { createContext, useState, useEffect } from 'react'
 const GlobalContext = createContext()
 
 export function GlobalContextProvider(props) {
-    const [globals, setGlobals] = useState({ aString: 'init val', count: 0, hideHamMenu: true, meetings: [], dataLoaded: false, username: null })
-
-    useEffect(() => {
-        getAllMeetings()
-    }, []);
-
-    async function getAllMeetings() {
-        const response = await fetch('/api/get-meetings', {
-            method: 'POST',
-            body: JSON.stringify({ meetups: 'all' }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        let data = await response.json();
-        setGlobals((previousGlobals) => { const newGlobals = JSON.parse(JSON.stringify(previousGlobals)); newGlobals.meetings = data.meetings; newGlobals.dataLoaded = true; return newGlobals })
-    }
+    const [globals, setGlobals] = useState({ aString: 'init val', count: 0, hideHamMenu: true, username: null })
 
     async function editGlobalData(command) { // {cmd: someCommand, newVal: 'new text'}
         if (command.cmd == 'hideHamMenu') { // {cmd: 'hideHamMenu', newVal: false} 
@@ -43,20 +27,8 @@ export function GlobalContextProvider(props) {
                 newGlobals.username = command.newVal; return newGlobals
             })
         }
-        if (command.cmd == 'addMeeting') {
-            const response = await fetch('/api/new-meetup', {
-                method: 'POST',
-                body: JSON.stringify(command.newVal),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json(); // Should check here that it worked OK
-            setGlobals((previousGlobals) => {
-                const newGlobals = JSON.parse(JSON.stringify(previousGlobals))
-                newGlobals.meetings.push(command.newVal); return newGlobals
-            })
-        }
+
+
     }
 
     const context = {

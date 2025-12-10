@@ -1,7 +1,7 @@
 import classes from './MainNavigation.module.css'
 import Link from 'next/link'
 import HamMenu from "../generic/HamMenu"
-import HamMenuFAB from "../generic/HamMenuFAB"
+
 import { useContext } from 'react'
 import GlobalContext from "../../pages/store/globalContext"
 import HamMenuContent from "./HamMenuContent"
@@ -15,10 +15,11 @@ function MainNavigation() {
     globalCtx.updateGlobals({ cmd: 'hideHamMenu', newVal: false })
   }
 
-  const contents = []
-  globalCtx.theGlobalObject.meetings.forEach(element => {
-    contents.push({title: element.title, webAddress: '/' + element.meetingId })
-  });
+  const contents = [
+    {title: 'Home', webAddress: '/'},
+    {title: 'Time Entries', webAddress: '/timetrack'},
+    {title: 'Projects', webAddress: '/projects'}
+  ]
   
   // Add logout option if user is logged in
   if (globalCtx.theGlobalObject.username) {
@@ -30,18 +31,14 @@ function MainNavigation() {
       <HamMenuContent contents={contents} />
       <div className={classes.leftSection}>
         <HamMenu toggleMenuHide={() => toggleMenuHide()} />
-        <HamMenuFAB toggleMenuHide={() => toggleMenuHide()} />
-        <div className={classes.roundIcon}>
+        <div className={classes.roundIcon} onClick={() => router.push('/')} style={{cursor: 'pointer'}}>
           <img src="/icon.png" alt="Icon" className={classes.iconImage} />
         </div>
       </div>
       <nav>
         <ul>
           <li>
-            <Link href='/'>All Meetups</Link> ({globalCtx.theGlobalObject.meetings.length})
-          </li>
-          <li>
-            <Link href='/new-meetup'>Add New Meetup</Link>
+            <Link href='/'>Home</Link>
           </li>
           <li>
             <Link href='/timetrack'>Time Entries</Link>
@@ -51,9 +48,13 @@ function MainNavigation() {
           </li>
         </ul>
       </nav>
-      {globalCtx.theGlobalObject.username && (
-        <div className={classes.username}>{globalCtx.theGlobalObject.username}</div>
-      )}
+      <div className={classes.userSection}>
+        {globalCtx.theGlobalObject.username ? (
+          <div className={classes.username}>{globalCtx.theGlobalObject.username}</div>
+        ) : (
+          <Link href='/auth/login' className={classes.loginLink}>log in</Link>
+        )}
+      </div>
     </header>
   );
 }

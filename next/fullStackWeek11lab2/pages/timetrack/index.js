@@ -161,12 +161,18 @@ function TimeTrackPage() {
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
             >
-              <option value="">Select Project</option>
-              {projects.map(project => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
+              {projects.length === 0 ? (
+                <option value="">Create Project First</option>
+              ) : (
+                <>
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
             <button onClick={startEntry} className={classes.startBtn}>
               Start Timer

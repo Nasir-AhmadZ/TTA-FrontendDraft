@@ -22,6 +22,15 @@ function LoginPage() {
       const data = await response.json();
       
       if (response.ok) {
+        // Clear all projects for the default user (entries are deleted automatically)
+        try {
+          await fetch('http://localhost:8000/api/timetrack/user/projects', {
+            method: 'DELETE'
+          });
+        } catch (error) {
+          console.error('Error clearing projects:', error);
+        }
+        
         globalCtx.updateGlobals({ cmd: 'setUsername', newVal: username });
         alert('Login successful!');
         router.push('/');

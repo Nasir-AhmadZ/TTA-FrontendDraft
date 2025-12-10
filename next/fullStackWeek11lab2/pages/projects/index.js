@@ -6,6 +6,9 @@ function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [editProjectName, setEditProjectName] = useState('');
+  const [editProjectDescription, setEditProjectDescription] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -67,6 +70,30 @@ function ProjectsPage() {
     }
   };
 
+  const updateProject = async () => {
+    if (!selectedProjectId || !editProjectName || !editProjectDescription) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/timetrack/project/${selectedProjectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editProjectName,
+          description: editProjectDescription
+        })
+      });
+      
+      if (response.ok) {
+        setSelectedProjectId('');
+        setEditProjectName('');
+        setEditProjectDescription('');
+        fetchProjects();
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
+  };
+
   const deleteAllUserProjects = async () => {
     if (!confirm('Delete ALL your projects and entries?')) return;
 
@@ -103,6 +130,38 @@ function ProjectsPage() {
           />
           <button onClick={createProject} className={classes.createBtn}>
             Create Project
+          </button>
+        </div>
+      </Card>
+
+      <Card>
+        <h2>Update Project</h2>
+        <div className={classes.form}>
+          <select
+            value={selectedProjectId}
+            onChange={(e) => setSelectedProjectId(e.target.value)}
+          >
+            <option value="">Select Project to Edit</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="New project name"
+            value={editProjectName}
+            onChange={(e) => setEditProjectName(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="New project description"
+            value={editProjectDescription}
+            onChange={(e) => setEditProjectDescription(e.target.value)}
+          />
+          <button onClick={updateProject} className={classes.updateBtn}>
+            Update Project
           </button>
         </div>
       </Card>

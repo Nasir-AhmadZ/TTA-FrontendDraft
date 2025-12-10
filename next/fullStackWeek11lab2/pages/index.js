@@ -1,4 +1,3 @@
-import MeetupList from '../components/meetups/MeetupList'
 import { useContext } from "react";
 import { useRouter } from 'next/router';
 import GlobalContext from "./store/globalContext"
@@ -7,11 +6,11 @@ function HomePage() {
     const globalCtx = useContext(GlobalContext)
     const router = useRouter()
 
-    if (globalCtx.theGlobalObject.dataLoaded == true) {
-        return (
-            <div>
-                <div style={{ textAlign: 'center', margin: '2rem 0' }}>
-                    <img src="/Slogan.jpg" alt="Slogan" style={{ maxWidth: '100%', height: 'auto' }} />
+    return (
+        <div>
+            <div style={{ textAlign: 'center', margin: '2rem 0' }}>
+                <img src="/Slogan.jpg" alt="Slogan" style={{ maxWidth: '100%', height: 'auto' }} />
+                {!globalCtx.theGlobalObject.username && (
                     <div style={{ marginTop: '2rem' }}>
                         <button 
                             onClick={() => router.push('/auth/login')}
@@ -26,12 +25,10 @@ function HomePage() {
                             Register
                         </button>
                     </div>
-                </div>
-                <MeetupList meetups={globalCtx.theGlobalObject.meetings} />
+                )}
             </div>
-        )
-    }
-    return <div>Loading data from database, please wait . . . </div>
+        </div>
+    )
 }
 
 export default HomePage;

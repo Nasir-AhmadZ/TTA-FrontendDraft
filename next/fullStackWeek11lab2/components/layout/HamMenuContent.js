@@ -27,8 +27,8 @@ export default function HamMenuContent(props) {
                 console.error('Logout notification failed:', error)
             }
             
-            // Clear user session
-            globalCtx.updateGlobals({ cmd: 'username', newVal: null })
+            // Switch back to default user
+            globalCtx.updateGlobals({ cmd: 'setUsername', newVal: null })
             localStorage.removeItem('access_token')
             localStorage.removeItem('user')
         }
