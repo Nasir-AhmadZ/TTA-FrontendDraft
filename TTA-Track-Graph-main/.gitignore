@@ -1,0 +1,7 @@
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+venv/
+env-pymongo-fastapi-crud/
+.terraform*
+terraform.tfstate*
