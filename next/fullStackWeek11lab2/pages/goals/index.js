@@ -14,8 +14,11 @@ function GoalsPage() {
   useEffect(() => {
     fetchProjects();
     fetchProjectTimes();
-    loadGoals();
   }, []);
+
+  useEffect(() => {
+    loadGoals();
+  }, [globalCtx.theGlobalObject.username]);
 
   const loadGoals = () => {
     const username = globalCtx.theGlobalObject.username;
@@ -23,7 +26,11 @@ function GoalsPage() {
       const savedGoals = localStorage.getItem(`goals_${username}`);
       if (savedGoals) {
         setGoals(JSON.parse(savedGoals));
+      } else {
+        setGoals([]);
       }
+    } else {
+      setGoals([]);
     }
   };
 
