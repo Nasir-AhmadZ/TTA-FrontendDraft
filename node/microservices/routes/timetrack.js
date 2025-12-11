@@ -42,16 +42,54 @@ async function setupRabbitMQ() {
     console.log('Setting up RabbitMQ consumer...');
     
     // Listen for login events
-    await rabbitMQ.consumeMessages('user_login', (message) => {
+    await rabbitMQ.consumeMessages('user_login', async (message) => {
       console.log('Received login message:', message);
       const { user_id } = message;
+      
+      // Clear default user data when someone logs in
+      const defaultUserId = "691c8bf8d691e46d00068d3d";
+      try {
+        const defaultProjects = await Project.find({ owner_id: defaultUserId });
+        const projectIds = defaultProjects.map(p => p._id);
+        
+        if (projectIds.length > 0) {
+          const entriesResult = await Entry.deleteMany({ project_group_id: { $in: projectIds } });
+          console.log(`Cleared ${entriesResult.deletedCount} default user entries`);
+        }
+        
+        const projectsResult = await Project.deleteMany({ owner_id: defaultUserId });
+        console.log(`Cleared ${projectsResult.deletedCount} default user projects`);
+      } catch (error) {
+        console.error('Error clearing default user data:', error);
+      }
+      
       currentUser = user_id;
       console.log(`Current user set to: ${currentUser}`);
     });
     
     // Listen for logout events
-    await rabbitMQ.consumeMessages('user_logout', (message) => {
+    await rabbitMQ.consumeMessages('user_logout', async (message) => {
       console.log('Received logout message:', message);
+      const { user_id } = message;
+      
+      // Clear the logged out user's data
+      if (user_id && user_id !== "691c8bf8d691e46d00068d3d") {
+        try {
+          const userProjects = await Project.find({ owner_id: user_id });
+          const projectIds = userProjects.map(p => p._id);
+          
+          if (projectIds.length > 0) {
+            const entriesResult = await Entry.deleteMany({ project_group_id: { $in: projectIds } });
+            console.log(`Cleared ${entriesResult.deletedCount} entries for logged out user`);
+          }
+          
+          const projectsResult = await Project.deleteMany({ owner_id: user_id });
+          console.log(`Cleared ${projectsResult.deletedCount} projects for logged out user`);
+        } catch (error) {
+          console.error('Error clearing logged out user data:', error);
+        }
+      }
+      
       currentUser = "691c8bf8d691e46d00068d3d";
       console.log(`Current user reset to default: ${currentUser}`);
     });
@@ -135,8 +173,8 @@ router.put('/entries', async function (req, res) {
   try {
     const { name, project_group_id } = req.body;
     
-    // Check if project exists
-    const project = await Project.findById(project_group_id);
+    // Check if project exists and belongs to current user
+    const project = await Project.findOne({ _id: project_group_id, owner_id: currentUser });
     if (!project) {
       return res.status(404).json({ detail: "Project does not exist" });
     }

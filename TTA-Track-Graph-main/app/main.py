@@ -30,7 +30,7 @@ app.add_middleware(
 )
 
 # Global variable to store current user
-current_active_user = "default_user"
+current_active_user = "691c8bf8d691e46d00068d3d"  # Default user ID
 
 def rabbitmq_consumer():
     """Listen for user login/logout messages from RabbitMQ"""
@@ -47,8 +47,20 @@ def rabbitmq_consumer():
             global current_active_user
             try:
                 message = json.loads(body)
-                current_active_user = message.get('username', 'default_user')
-                print(f"Updated current user to: {current_active_user}")
+                user_id = message.get('user_id')
+                if user_id:
+                    current_active_user = user_id
+                    
+                    # Clear default user data when someone logs in
+                    default_user_id = "691c8bf8d691e46d00068d3d"
+                    default_projects = list(projects_collection.find({"owner_id": ObjectId(default_user_id)}))
+                    project_ids = [project["_id"] for project in default_projects]
+                    
+                    if project_ids:
+                        entries_collection.delete_many({"project_group_id": {"$in": project_ids}})
+                    projects_collection.delete_many({"owner_id": ObjectId(default_user_id)})
+                    
+                    print(f"Updated current user to: {current_active_user}")
             except Exception as e:
                 print(f"Error processing login message: {e}")
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -56,8 +68,8 @@ def rabbitmq_consumer():
         def logout_callback(ch, method, properties, body):
             global current_active_user
             try:
-                current_active_user = "default_user"
-                print(f"User logged out, reset to: {current_active_user}")
+                current_active_user = "691c8bf8d691e46d00068d3d"  # Reset to default user ID
+                print(f"User logged out, reset to default user")
             except Exception as e:
                 print(f"Error processing logout message: {e}")
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -108,11 +120,12 @@ def get_graph_by_project(project_id: str):
 
 @app.get("/graph/user/{user_id}",status_code=200)
 def get_graph_by_user(user_id: str):
+    # Only show data for current active user
+    if user_id != current_active_user:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
     projects = projects_collection.find({"owner_id": ObjectId(user_id)})
     totals = defaultdict(int) 
-
-    date = [] 
-    duration = []
 
     for project in projects:
         entries = entries_collection.find({"project_group_id": project["_id"]})
@@ -136,12 +149,17 @@ def get_graph_by_user(user_id: str):
 @app.get("/graph/current-user", status_code=200)
 def get_graph_current_user():
     """Get graph for the currently active user"""
-    global current_active_user
-    
     totals = defaultdict(int)
     
-    # Find entries for current user (assuming username is stored in entries or projects)
-    entries = entries_collection.find({})
+    # Find projects owned by current user
+    user_projects = projects_collection.find({"owner_id": ObjectId(current_active_user)})
+    project_ids = [project["_id"] for project in user_projects]
+    
+    if not project_ids:
+        raise HTTPException(status_code=404, detail="No projects found")
+    
+    # Get entries for this user's projects
+    entries = entries_collection.find({"project_group_id": {"$in": project_ids}})
     for e in entries:
         entry = entry_helper(e)
         if entry.get("duration") and entry.get("starttime"):
@@ -149,7 +167,7 @@ def get_graph_current_user():
             totals[date_time] += int(entry["duration"])
     
     if not totals:
-        raise HTTPException(status_code=404, detail=f"No time entries found for user: {current_active_user}")
+        raise HTTPException(status_code=404, detail="No time entries found")
     
     sort_entries = sorted(totals.items())
     date = [d for d, _ in sort_entries]
@@ -157,7 +175,6 @@ def get_graph_current_user():
     
     plt.figure(figsize=(10, 6))
     plt.plot(date, duration, marker='o')
-    plt.title(f'Daily Time Tracking - {current_active_user}')
     plt.xlabel('Date')
     plt.ylabel('Duration (seconds)')
     plt.xticks(rotation=45)
@@ -174,6 +191,6 @@ def get_graph_current_user():
 @app.get("/current-user")
 def get_current_user():
     """Get the currently active user"""
-    return {"username": current_active_user}
+    return {"user_id": current_active_user, "is_default": current_active_user == "691c8bf8d691e46d00068d3d"}
 
 # python -m uvicorn app.main:app --reload
