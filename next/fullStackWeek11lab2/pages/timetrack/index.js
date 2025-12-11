@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Card from '../../components/ui/Card';
+import GlassWrapper from '../../components/ui/GlassWrapper';
 import classes from './timetrack.module.css';
 
 function TimeTrackPage() {
@@ -148,7 +148,7 @@ function TimeTrackPage() {
       <div className={classes.container}>
         <h1>Time Entry Management</h1>
         
-        <Card>
+        <GlassWrapper>
           <h2>Start New Entry</h2>
           <div className={classes.form}>
             <input
@@ -195,9 +195,9 @@ function TimeTrackPage() {
               ))}
             </div>
           )}
-        </Card>
+        </GlassWrapper>
 
-        <Card>
+        <GlassWrapper>
           <h2>Update Entry</h2>
           <div className={classes.form}>
             <select
@@ -232,9 +232,9 @@ function TimeTrackPage() {
               Update Entry
             </button>
           </div>
-        </Card>
+        </GlassWrapper>
 
-        <Card>
+        <GlassWrapper>
           <h2>View Entries</h2>
           <select
             value={selectedView}
@@ -267,7 +267,7 @@ function TimeTrackPage() {
               </div>
             ))}
           </div>
-        </Card>
+        </GlassWrapper>
       </div>
   );
 }

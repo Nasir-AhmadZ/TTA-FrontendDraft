@@ -4,9 +4,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: rgb(245, 173, 66);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding: 0 10%;
   color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -30,7 +34,8 @@
 .header a {
   text-decoration: none;
   font-size: 1.5rem;
-  color: white;
+  color: rgb(10, 10, 51);
+  font-weight: bold;
 }
 
 .header a:hover,
@@ -46,14 +51,14 @@
 }
 
 .roundIcon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: white;
+  background-color: transparent;
 }
 
 .iconImage {

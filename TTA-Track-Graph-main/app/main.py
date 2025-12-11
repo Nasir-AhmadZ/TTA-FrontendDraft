@@ -33,26 +33,37 @@ app.add_middleware(
 current_active_user = "default_user"
 
 def rabbitmq_consumer():
-    """Listen for user login messages from RabbitMQ"""
+    """Listen for user login/logout messages from RabbitMQ"""
     global current_active_user
     try:
         connection = pika.BlockingConnection(pika.URLParameters(RABBITMQ_URL))
         channel = connection.channel()
         
-        # Declare the same queue as timetrack service
+        # Declare queues
         channel.queue_declare(queue='user_login', durable=True)
+        channel.queue_declare(queue='user_logout', durable=True)
         
-        def callback(ch, method, properties, body):
+        def login_callback(ch, method, properties, body):
             global current_active_user
             try:
                 message = json.loads(body)
                 current_active_user = message.get('username', 'default_user')
                 print(f"Updated current user to: {current_active_user}")
             except Exception as e:
-                print(f"Error processing message: {e}")
+                print(f"Error processing login message: {e}")
             ch.basic_ack(delivery_tag=method.delivery_tag)
         
-        channel.basic_consume(queue='user_login', on_message_callback=callback)
+        def logout_callback(ch, method, properties, body):
+            global current_active_user
+            try:
+                current_active_user = "default_user"
+                print(f"User logged out, reset to: {current_active_user}")
+            except Exception as e:
+                print(f"Error processing logout message: {e}")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        
+        channel.basic_consume(queue='user_login', on_message_callback=login_callback)
+        channel.basic_consume(queue='user_logout', on_message_callback=logout_callback)
         channel.start_consuming()
     except Exception as e:
         print(f"RabbitMQ connection failed: {e}")

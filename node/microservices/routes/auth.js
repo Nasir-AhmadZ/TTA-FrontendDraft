@@ -23,6 +23,9 @@ let userSchema = new Schema({
 
 let User = mongoose.model('User', userSchema);
 
+// Global variable to store current logged-in user
+let currentUser = null;
+
 // Helper functions
 function hashPassword(password, salt = null) {
   if (!salt) {
@@ -181,9 +184,21 @@ router.delete('/users/:username', async function (req, res) {
   }
 });
 
+// Get current user
+router.get('/current-user', function (req, res) {
+  if (currentUser) {
+    res.json({ user: currentUser, isLoggedIn: true });
+  } else {
+    res.json({ user: null, isLoggedIn: false });
+  }
+});
+
 // Logout user
 router.post('/logout', async function (req, res) {
   try {
+    // Clear current user
+    currentUser = null;
+    
     // Notify timetrack service about logout via RabbitMQ
     try {
       await rabbitMQ.publishMessage('user_logout', { action: 'logout' });
@@ -212,9 +227,12 @@ router.post('/login', async function (req, res) {
       return res.status(400).json({ detail: "Invalid username or password" });
     }
     
+    // Store current user globally
+    currentUser = serializeUser(user);
+    
     // Notify timetrack service about logged-in user via RabbitMQ
     try {
-      await rabbitMQ.publishMessage('user_login', { user_id: user._id.toString() });
+      await rabbitMQ.publishMessage('user_login', { user_id: user._id.toString(), username: user.username });
     } catch (error) {
       console.error('Failed to notify timetrack service via RabbitMQ:', error);
     }

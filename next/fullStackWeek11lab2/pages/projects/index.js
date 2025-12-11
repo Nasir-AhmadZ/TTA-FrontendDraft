@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Card from '../../components/ui/Card';
+import GlassWrapper from '../../components/ui/GlassWrapper';
 import classes from './projects.module.css';
 
 function ProjectsPage() {
@@ -113,7 +113,7 @@ function ProjectsPage() {
     <div className={classes.container}>
       <h1>Project Management</h1>
       
-      <Card>
+      <GlassWrapper>
         <h2>Create Project</h2>
         <div className={classes.form}>
           <input
@@ -132,9 +132,9 @@ function ProjectsPage() {
             Create Project
           </button>
         </div>
-      </Card>
+      </GlassWrapper>
 
-      <Card>
+      <GlassWrapper>
         <h2>Update Project</h2>
         <div className={classes.form}>
           <select
@@ -164,9 +164,9 @@ function ProjectsPage() {
             Update Project
           </button>
         </div>
-      </Card>
+      </GlassWrapper>
 
-      <Card>
+      <GlassWrapper>
         <h2>Your Projects</h2>
         <div className={classes.projects}>
           {projects.map(project => (
@@ -184,7 +184,7 @@ function ProjectsPage() {
         <button onClick={deleteAllUserProjects} className={classes.deleteAllBtn}>
           Delete All My Projects
         </button>
-      </Card>
+      </GlassWrapper>
     </div>
   );
 }

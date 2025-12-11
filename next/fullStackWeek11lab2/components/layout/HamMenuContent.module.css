@@ -2,22 +2,26 @@
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 50;
+    z-index: 9999;
     background-color: rgba(182, 176, 169, 0.5);
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .mainContent {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 100;
+    z-index: 10000;
     width: 75%;
     max-width: 275px;
-    height: 100%;
-    background-color: white;
-    overflow-y: scroll;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    overflow-y: auto;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
@@ -26,9 +30,10 @@
   }
 
 .menuItem {
-    color: black;
+    color: white;
     padding: 10px;
-    border: 1px solid gray;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 20px;
+    cursor: pointer;
 }
 

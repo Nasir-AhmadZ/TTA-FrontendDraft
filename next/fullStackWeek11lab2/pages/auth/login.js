@@ -1,6 +1,6 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Card from '../../components/ui/Card';
+import GlassWrapper from '../../components/ui/GlassWrapper';
 import GlobalContext from '../store/globalContext';
 
 function LoginPage() {
@@ -8,6 +8,13 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const router = useRouter();
   const globalCtx = useContext(GlobalContext);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (globalCtx.theGlobalObject.username) {
+      router.push('/');
+    }
+  }, [globalCtx.theGlobalObject.username, router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,15 +29,6 @@ function LoginPage() {
       const data = await response.json();
       
       if (response.ok) {
-        // Clear all projects for the default user (entries are deleted automatically)
-        try {
-          await fetch('http://localhost:8000/api/timetrack/user/projects', {
-            method: 'DELETE'
-          });
-        } catch (error) {
-          console.error('Error clearing projects:', error);
-        }
-        
         globalCtx.updateGlobals({ cmd: 'setUsername', newVal: username });
         alert('Login successful!');
         router.push('/');
@@ -44,7 +42,7 @@ function LoginPage() {
 
   return (
     <div style={{ maxWidth: '400px', margin: '2rem auto', padding: '2rem' }}>
-      <Card>
+      <GlassWrapper>
         <h1>Login</h1>
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '1rem' }}>
@@ -74,7 +72,13 @@ function LoginPage() {
             Login
           </button>
         </form>
-      </Card>
+        <button
+          onClick={() => router.push('/auth/register')}
+          style={{ width: '100%', padding: '0.75rem', backgroundColor: 'transparent', color: 'white', border: '1px solid rgba(255, 255, 255, 0.3)', borderRadius: '4px', cursor: 'pointer', marginTop: '1rem' }}
+        >
+          Register
+        </button>
+      </GlassWrapper>
     </div>
   );
 }

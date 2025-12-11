@@ -18,7 +18,8 @@ function MainNavigation() {
   const contents = [
     {title: 'Home', webAddress: '/'},
     {title: 'Time Entries', webAddress: '/timetrack'},
-    {title: 'Projects', webAddress: '/projects'}
+    {title: 'Projects', webAddress: '/projects'},
+    {title: 'Graphs', webAddress: '/graphs'}
   ]
   
   // Add logout option if user is logged in
@@ -46,11 +47,30 @@ function MainNavigation() {
           <li>
             <Link href='/projects'>Projects</Link>
           </li>
+          <li>
+            <Link href='/graphs'>Graphs</Link>
+          </li>
         </ul>
       </nav>
       <div className={classes.userSection}>
         {globalCtx.theGlobalObject.username ? (
-          <div className={classes.username}>{globalCtx.theGlobalObject.username}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className={classes.username}>{globalCtx.theGlobalObject.username}</div>
+            <button 
+              onClick={globalCtx.logout}
+              style={{ 
+                background: 'transparent', 
+                border: '1px solid rgba(255,255,255,0.3)', 
+                color: 'white', 
+                padding: '0.25rem 0.5rem', 
+                borderRadius: '4px', 
+                cursor: 'pointer',
+                fontSize: '0.8rem'
+              }}
+            >
+              Logout
+            </button>
+          </div>
         ) : (
           <Link href='/auth/login' className={classes.loginLink}>log in</Link>
         )}

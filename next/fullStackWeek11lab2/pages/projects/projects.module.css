@@ -14,10 +14,24 @@
 .form input,
 .form select {
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   flex: 1;
   min-width: 200px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form select option {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
 }
 
 .createBtn {
