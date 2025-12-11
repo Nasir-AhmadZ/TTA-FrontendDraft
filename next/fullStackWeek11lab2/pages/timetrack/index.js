@@ -202,7 +202,16 @@ function TimeTrackPage() {
           <div className={classes.form}>
             <select
               value={selectedEntryId}
-              onChange={(e) => setSelectedEntryId(e.target.value)}
+              onChange={(e) => {
+                const entryId = e.target.value;
+                setSelectedEntryId(entryId);
+                if (entryId) {
+                  const entry = entries.find(e => e.id == entryId);
+                  if (entry) {
+                    setEditEntryName(entry.name);
+                  }
+                }
+              }}
             >
               <option value="">Select Entry to Edit</option>
               {entries.map(entry => (

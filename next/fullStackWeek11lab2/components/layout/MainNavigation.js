@@ -19,6 +19,7 @@ function MainNavigation() {
     {title: 'Home', webAddress: '/'},
     {title: 'Time Entries', webAddress: '/timetrack'},
     {title: 'Projects', webAddress: '/projects'},
+    {title: 'Goals', webAddress: '/goals'},
     {title: 'Graphs', webAddress: '/graphs'}
   ]
   
@@ -46,6 +47,9 @@ function MainNavigation() {
           </li>
           <li>
             <Link href='/projects'>Projects</Link>
+          </li>
+          <li>
+            <Link href='/goals'>Goals</Link>
           </li>
           <li>
             <Link href='/graphs'>Graphs</Link>
