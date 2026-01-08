@@ -36,7 +36,7 @@ function TimeTrackPage() {
   const fetchProjects = async () => {
       try {
         const res = await fetch(
-          `http://${aws_url}:8002/projects/${userID}`
+          `http://af7f0c2a07d694801aebf0b7be50035b-1474371910.eu-west-1.elb.amazonaws.com:8002/projects/${userID}`
         );
 
         const text = await res.text();
