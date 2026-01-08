@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import classes from '../../styles/timetrack.module.css';
+import { useContext } from 'react';
+import GlobalContext from "../../pages/store/globalContext"
 
 function TimeTrackPage() {
+  const globalCtx = useContext(GlobalContext)
+  const aws_url = "a62df60dc8cde4cc596187a06eceeeb7-1831428695.eu-west-1.elb.amazonaws.com";
+  const username = globalCtx.theGlobalObject.username;
+  const [userID, setUserID] = useState(null);
   const [projects, setProjects] = useState([]);
   const [entries, setEntries] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
@@ -14,17 +20,54 @@ function TimeTrackPage() {
   const [displayEntries, setDisplayEntries] = useState([]);
 
   useEffect(() => {
-    fetchProjects();
     fetchEntries();
   }, []);
 
+  useEffect(() => {
+    if (!username) return;
+    fetchUserID();
+  }, [username]);
+
+  useEffect(() => {
+    if (!userID) return;
+    fetchProjects();
+  }, [userID]);
+
   const fetchProjects = async () => {
+      try {
+        const res = await fetch(
+          `http://${aws_url}:8002/projects/${userID}`
+        );
+
+        const text = await res.text();
+        const data = JSON.parse(text);
+
+        if (!res.ok) throw new Error(data.detail || text);
+
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Error fetching projects:", e);
+        setProjects([]);
+      }
+    };
+
+  
+  const fetchUserID = async () => {
     try {
-      const response = await fetch('http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/projects/');
-      const data = await response.json();
-      setProjects(data);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
+      // NOTE: likely /users/ not /user/
+      const res = await fetch(
+        `http://a62c7cf0ed6354c41891a20ac0ec7c91-132793659.eu-west-1.elb.amazonaws.com:8000/users/${username}`
+      );
+
+      const text = await res.text();
+      const data = JSON.parse(text);
+
+      if (!res.ok) throw new Error(data.detail || text);
+
+      setUserID(data.id);
+    } catch (e) {
+      console.error("Error fetching user id:", e);
+      setUserID(null);
     }
   };
 
