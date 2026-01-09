@@ -1,64 +1,101 @@
 import { useState, useEffect } from 'react';
-import classes from '../../styles/graph.module.css';
+import classes from '../../styles/timetrack.module.css';
 
-function GraphsPage() {
-  const [graphData, setGraphData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+import { useContext } from 'react';
+import GlobalContext from "../../pages/store/globalContext"
 
-  const fetchGraphData = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Fetch graph for current active user
-      const response = await fetch('http://localhost:5000/graph/current-user');
-      if (response.ok) {
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGraphData({ imageUrl });
-      } else {
-        setError('Failed to fetch graph data');
+function GraphPage() {
+  const aws_url = "aeb46a8d8259045118b0803bb4bdd0e9-1361539024.eu-west-1.elb.amazonaws.com";
+  const globalCtx = useContext(GlobalContext)
+  const username = globalCtx.theGlobalObject.username;
+  const [projects, setProjects] = useState([]);
+  const [userID, setUserID] = useState(null);
+  const [selectedProject, setSelectedProject] = useState('');
+  const [graphSrc, setGraphSrc] = useState("");
+
+  
+  useEffect(() => {
+        if (!username) return;
+
+    const fetchUserID = async () => {
+      try {
+        // NOTE: likely /users/ not /user/
+        const res = await fetch(
+          `http://a256d1d89ae1341afafcc5c58023daea-1034684740.eu-west-1.elb.amazonaws.com:8000/users/${username}`
+        );
+
+        const text = await res.text();
+        const data = JSON.parse(text);
+
+        if (!res.ok) throw new Error(data.detail || text);
+
+        setUserID(data.id);
+      } catch (e) {
+        console.error("Error fetching user id:", e);
+        setUserID(null);
       }
-    } catch (error) {
-      setError('Error connecting to graph service');
-      console.error('Error fetching graph data:', error);
-    } finally {
-      setLoading(false);
+    };
+
+    fetchUserID();
+  }, [username]);
+
+  useEffect(() => {
+    if (!userID) return;
+    fetchProjects();
+  }, [userID]);
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch(
+        `http://${aws_url}:8002/projects/user/${userID}`
+      );
+
+      const text = await res.text();
+      const data = JSON.parse(text);
+
+      if (!res.ok) throw new Error(data.detail || text);
+
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+      setProjects([]);
     }
   };
 
-  useEffect(() => {
-    fetchGraphData();
-  }, []);
+  const getGraph = () => {
+    if (!selectedProject) return;
+    setGraphSrc(`http://localhost:8000/graph/proj/${selectedProject}`);
+  };
 
   return (
     <div className={classes.container}>
-      <h1>Time Tracking Graphs</h1>
-      
-        <h2>Time Entry Analytics</h2>
-        <button onClick={fetchGraphData} className={classes.refreshBtn}>
-          Refresh Data
+      <h1>Graphing</h1>
+
+      <h2>Graph by project</h2>
+      <div className={classes.inpt}>
+        <select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
+          <option value="">Select Project</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+
+        <button className={classes.startBtn} onClick={getGraph} disabled={!selectedProject}>
+          Get Graph
         </button>
-        
-        {loading && <p>Loading graph data...</p>}
-        {error && <p className={classes.error}>{error}</p>}
-        
-        {graphData && (
-          <div className={classes.graphContainer}>
-            <img 
-              src={graphData.imageUrl} 
-              alt="Time Entry Graph" 
-              className={classes.graph}
-            />
-          </div>
-        )}
-        
-        {!graphData && !loading && !error && (
-          <p>No graph data available. Make sure the Python graph service is running on port 5000.</p>
-        )}
+      </div>
+
+      {graphSrc && (
+        <img
+          src={graphSrc}
+          alt="Project graph"
+          style={{ marginTop: "1rem", maxWidth: "100%" }}
+        />
+      )}
     </div>
   );
 }
 
-export default GraphsPage;
+export default GraphPage;

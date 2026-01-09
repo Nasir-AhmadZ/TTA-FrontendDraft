@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react';
 import classes from '../../styles/projects.module.css';
 
+import { useContext } from 'react';
+import GlobalContext from "../../pages/store/globalContext"
+
 function ProjectsPage() {
   const aws_url = "aeb46a8d8259045118b0803bb4bdd0e9-1361539024.eu-west-1.elb.amazonaws.com";
+  const globalCtx = useContext(GlobalContext)
+  const username = globalCtx.theGlobalObject.username;
   const [projects, setProjects] = useState([]);
+  const [userID, setUserID] = useState(null);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+        if (!username) return;
 
-  const fetchProjects = async () => {
+    const fetchUserID = async () => {
       try {
+        // NOTE: likely /users/ not /user/
         const res = await fetch(
-          `http://${aws_url}:8002/projects/user`
+          `http://a256d1d89ae1341afafcc5c58023daea-1034684740.eu-west-1.elb.amazonaws.com:8000/users/${username}`
         );
 
         const text = await res.text();
@@ -22,12 +28,38 @@ function ProjectsPage() {
 
         if (!res.ok) throw new Error(data.detail || text);
 
-        setProjects(Array.isArray(data) ? data : []);
+        setUserID(data.id);
       } catch (e) {
-        console.error("Error fetching projects:", e);
-        setProjects([]);
+        console.error("Error fetching user id:", e);
+        setUserID(null);
       }
     };
+
+    fetchUserID();
+  }, [username]);
+
+  useEffect(() => {
+    if (!userID) return;
+    fetchProjects();
+  }, [userID]);
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch(
+        `http://${aws_url}:8002/projects/user/${userID}`
+      );
+
+      const text = await res.text();
+      const data = JSON.parse(text);
+
+      if (!res.ok) throw new Error(data.detail || text);
+
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+      setProjects([]);
+    }
+  };
 
   const createProject = async () => {
     if (!projectName || !projectDescription) {
@@ -35,28 +67,24 @@ function ProjectsPage() {
       return;
     }
 
-    try {
-      const response = await fetch(`http://${aws_url}:8002/projects/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: projectName,
-          description: projectDescription
-        })
-      });
-      
-      if (response.ok) {
-        setProjectName('');
-        setProjectDescription('');
-        fetchProjects();
-        alert('Project created successfully!');
-      } else {
-        const result = await response.json();
-        alert('Error creating project: ' + result.detail);
-      }
-    } catch (error) {
-      console.error('Error creating project:', error);
-      alert('Network error creating project');
+    const response = await fetch(`http://${aws_url}:8002/projects/`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: projectName,
+        description: projectDescription,
+        owner_id: userID
+      })
+    });
+    
+    if (response.ok) {
+      setProjectName('');
+      setProjectDescription('');
+      fetchProjects();
+      alert('Project created successfully!');
+    } else {
+      const result = await response.json();
+      alert('Error creating project: ' + result.detail);
     }
   };
 

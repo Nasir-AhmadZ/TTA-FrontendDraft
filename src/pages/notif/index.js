@@ -1,19 +1,51 @@
 import { useState, useEffect } from 'react';
 import classes from '../../styles/notif.module.css';
 
+import { useContext } from 'react';
+import GlobalContext from "../../pages/store/globalContext"
+
 function NotifPage() {
   const aws_url = "acc16d535ac2743b2863e7a2ef6ee7b8-1367169829.eu-west-1.elb.amazonaws.com";
+  const globalCtx = useContext(GlobalContext)
+  const username = globalCtx.theGlobalObject.username;
+  const [userID, setUserID] = useState(null);
   const [unreadnotif, setUnread] = useState([]);
   const [readnotif, setRead] = useState([]);
 
   useEffect(() => {
+        if (!username) return;
+
+    const fetchUserID = async () => {
+      try {
+        // NOTE: likely /users/ not /user/
+        const res = await fetch(
+          `http://a256d1d89ae1341afafcc5c58023daea-1034684740.eu-west-1.elb.amazonaws.com:8000/users/${username}`
+        );
+
+        const text = await res.text();
+        const data = JSON.parse(text);
+
+        if (!res.ok) throw new Error(data.detail || text);
+
+        setUserID(data.id);
+      } catch (e) {
+        console.error("Error fetching user id:", e);
+        setUserID(null);
+      }
+    };
+
+    fetchUserID();
+  }, [username]);
+
+  useEffect(() => {
+    if (!userID) return;
     fetchRead();
     fetchUnread();
-  }, []);
+  }, [userID]);
 
   const fetchUnread = async () => {
     try {
-      const response = await fetch(`http://${aws_url}:8003/notifications/unread`);
+      const response = await fetch(`http://${aws_url}:8003/notifications/unread/${userID}`);
       const data = await response.json();
       setUnread(data);
     } catch (error) {
@@ -23,7 +55,7 @@ function NotifPage() {
 
   const fetchRead = async () => {
     try {
-      const response = await fetch(`http://${aws_url}:8003/notifications/read`);
+      const response = await fetch(`http://${aws_url}:8003/notifications/read/${userID}`);
       const data = await response.json();
       setRead(data);
     } catch (error) {

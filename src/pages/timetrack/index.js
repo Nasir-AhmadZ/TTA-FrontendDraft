@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import classes from '../../styles/timetrack.module.css';
 
+import { useContext } from 'react';
+import GlobalContext from "../../pages/store/globalContext"
+
 function TimeTrackPage() {
   const aws_url = "aeb46a8d8259045118b0803bb4bdd0e9-1361539024.eu-west-1.elb.amazonaws.com";
+  const globalCtx = useContext(GlobalContext)
+  const username = globalCtx.theGlobalObject.username;
   const [projects, setProjects] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [userID, setUserID] = useState(null);
   const [selectedProject, setSelectedProject] = useState('');
   const [entryName, setEntryName] = useState('');
   const [activeEntries, setActiveEntries] = useState([]);
@@ -15,14 +21,13 @@ function TimeTrackPage() {
   const [displayEntries, setDisplayEntries] = useState([]);
 
   useEffect(() => {
-    fetchEntries();
-    fetchProjects();
-  }, []);
+        if (!username) return;
 
-  const fetchProjects = async () => {
+    const fetchUserID = async () => {
       try {
+        // NOTE: likely /users/ not /user/
         const res = await fetch(
-          `http://${aws_url}:8002/projects/user`
+          `http://a256d1d89ae1341afafcc5c58023daea-1034684740.eu-west-1.elb.amazonaws.com:8000/users/${username}`
         );
 
         const text = await res.text();
@@ -30,16 +35,43 @@ function TimeTrackPage() {
 
         if (!res.ok) throw new Error(data.detail || text);
 
-        setProjects(Array.isArray(data) ? data : []);
+        setUserID(data.id);
       } catch (e) {
-        console.error("Error fetching projects:", e);
-        setProjects([]);
+        console.error("Error fetching user id:", e);
+        setUserID(null);
       }
     };
 
+    fetchUserID();
+  }, [username]);
+
+  useEffect(() => {
+    if (!userID) return;
+    fetchProjects();
+    fetchEntries();
+  }, [userID]);
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch(
+        `http://${aws_url}:8002/projects/user/${userID}`
+      );
+
+      const text = await res.text();
+      const data = JSON.parse(text);
+
+      if (!res.ok) throw new Error(data.detail || text);
+
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+      setProjects([]);
+    }
+  };
+
   const fetchEntries = async () => {
     try {
-      const response = await fetch(`http://${aws_url}:8002/entries/`);
+      const response = await fetch(`http://${aws_url}:8002/entries/${userID}`);
       const data = await response.json();
       setEntries(data);
       const active = data.filter(entry => !entry.endtime);
