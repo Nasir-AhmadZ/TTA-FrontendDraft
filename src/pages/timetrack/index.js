@@ -1,13 +1,8 @@
 import { useState, useEffect } from 'react';
 import classes from '../../styles/timetrack.module.css';
-import { useContext } from 'react';
-import GlobalContext from "../../pages/store/globalContext"
 
 function TimeTrackPage() {
-  const globalCtx = useContext(GlobalContext)
-  const aws_url = "a62df60dc8cde4cc596187a06eceeeb7-1831428695.eu-west-1.elb.amazonaws.com";
-  const username = globalCtx.theGlobalObject.username;
-  const [userID, setUserID] = useState(null);
+  const aws_url = "aeb46a8d8259045118b0803bb4bdd0e9-1361539024.eu-west-1.elb.amazonaws.com";
   const [projects, setProjects] = useState([]);
   const [entries, setEntries] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
@@ -21,22 +16,13 @@ function TimeTrackPage() {
 
   useEffect(() => {
     fetchEntries();
-  }, []);
-
-  useEffect(() => {
-    if (!username) return;
-    fetchUserID();
-  }, [username]);
-
-  useEffect(() => {
-    if (!userID) return;
     fetchProjects();
-  }, [userID]);
+  }, []);
 
   const fetchProjects = async () => {
       try {
         const res = await fetch(
-          `http://af7f0c2a07d694801aebf0b7be50035b-1474371910.eu-west-1.elb.amazonaws.com:8002/projects/${userID}`
+          `http://${aws_url}:8002/projects/user`
         );
 
         const text = await res.text();
@@ -51,29 +37,9 @@ function TimeTrackPage() {
       }
     };
 
-  
-  const fetchUserID = async () => {
-    try {
-      // NOTE: likely /users/ not /user/
-      const res = await fetch(
-        `http://a62c7cf0ed6354c41891a20ac0ec7c91-132793659.eu-west-1.elb.amazonaws.com:8000/users/${username}`
-      );
-
-      const text = await res.text();
-      const data = JSON.parse(text);
-
-      if (!res.ok) throw new Error(data.detail || text);
-
-      setUserID(data.id);
-    } catch (e) {
-      console.error("Error fetching user id:", e);
-      setUserID(null);
-    }
-  };
-
   const fetchEntries = async () => {
     try {
-      const response = await fetch('http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/entries/');
+      const response = await fetch(`http://${aws_url}:8002/entries/`);
       const data = await response.json();
       setEntries(data);
       const active = data.filter(entry => !entry.endtime);
@@ -87,7 +53,7 @@ function TimeTrackPage() {
     if (!selectedProject || !entryName) return;
 
     try {
-      const response = await fetch('http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/entries/', {
+      const response = await fetch(`http://${aws_url}:8002/entries/`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -107,7 +73,7 @@ function TimeTrackPage() {
 
   const stopSpecificEntry = async (entryId) => {
     try {
-      const response = await fetch(`http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/entries/${entryId}`, {
+      const response = await fetch(`http://${aws_url}:8002/entries/${entryId}`, {
         method: 'PATCH'
       });
       
@@ -121,7 +87,7 @@ function TimeTrackPage() {
 
   const deleteEntry = async (entryId) => {
     try {
-      const response = await fetch(`http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/entry/${entryId}`, {
+      const response = await fetch(`http://${aws_url}:8002/entry/${entryId}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -139,7 +105,7 @@ function TimeTrackPage() {
       const body = { name: editEntryName };
       if (editProjectId) body.project_group_id = editProjectId;
 
-      const response = await fetch(`http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/entries/update/${selectedEntryId}`, {
+      const response = await fetch(`http://${aws_url}:8002/entries/update/${selectedEntryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -163,7 +129,7 @@ function TimeTrackPage() {
       setDisplayEntries(entries.slice(0, 10));
     } else {
       try {
-        const response = await fetch(`http://a2090d8f11ab942f0897c2471569b105-1957319447.eu-west-1.elb.amazonaws.com:8002/entries/project/${value}`);
+        const response = await fetch(`http://${aws_url}:8002/entries/project/${value}`);
         const data = await response.json();
         setDisplayEntries(data);
       } catch (error) {

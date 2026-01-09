@@ -9,7 +9,7 @@ function LoginPage() {
   const [email, setEmail] = useState('');
   const router = useRouter();
   const globalCtx = useContext(GlobalContext);
-  const aws_url = "a62c7cf0ed6354c41891a20ac0ec7c91-132793659.eu-west-1.elb.amazonaws.com";
+  const aws_url = "a256d1d89ae1341afafcc5c58023daea-1034684740.eu-west-1.elb.amazonaws.com";
 
   // Redirect if already logged in
   useEffect(() => {
@@ -25,7 +25,11 @@ function LoginPage() {
       const response = await fetch(`http://${aws_url}:8000/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, email })
+        body: JSON.stringify({ 
+          username: username,
+          password: password, 
+          email: email 
+        })
       });
       const data = await response.json();
       

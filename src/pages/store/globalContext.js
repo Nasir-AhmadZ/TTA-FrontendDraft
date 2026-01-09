@@ -3,6 +3,7 @@ import { createContext, useState, useEffect } from 'react'
 const GlobalContext = createContext()
 
 export function GlobalContextProvider(props) {
+    const aws_url = "a256d1d89ae1341afafcc5c58023daea-1034684740.eu-west-1.elb.amazonaws.com";
     const [globals, setGlobals] = useState({ aString: 'init val', count: 0, hideHamMenu: true, username: null })
 
     useEffect(() => {
@@ -13,19 +14,29 @@ export function GlobalContextProvider(props) {
     }, [])
 
     async function logout() {
-        const currentUsername = globals.username
-        
         try {
-            await fetch('http://localhost:8000/api/auth/logout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            })
+            const savedUsername = sessionStorage.getItem('username')
+
+            const response = await fetch(`http://${aws_url}:8000/logout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: savedUsername })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+            alert('Logout successful');
+            sessionStorage.removeItem('username');
+            setGlobals(prev => ({ ...prev, username: null }));
+            } else {
+            alert(data?.message || 'Logout failed');
+            }
         } catch (error) {
-            console.error('Logout error:', error)
+            console.error(error);
+            alert('Network error during logout');
         }
-        sessionStorage.removeItem('username')
-        setGlobals(prev => ({ ...prev, username: null }))
-    }
+        }
 
     async function editGlobalData(command) {
         if (command.cmd == 'hideHamMenu') { 

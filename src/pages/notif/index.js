@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import classes from '../../styles/notif.module.css';
 
 function NotifPage() {
+  const aws_url = "acc16d535ac2743b2863e7a2ef6ee7b8-1367169829.eu-west-1.elb.amazonaws.com";
   const [unreadnotif, setUnread] = useState([]);
   const [readnotif, setRead] = useState([]);
 
@@ -12,7 +13,7 @@ function NotifPage() {
 
   const fetchUnread = async () => {
     try {
-      const response = await fetch('http://ae8bce2c7f4ea4b02b8364d4a9931506-593631115.eu-west-1.elb.amazonaws.com:8003/notifications/unread');
+      const response = await fetch(`http://${aws_url}:8003/notifications/unread`);
       const data = await response.json();
       setUnread(data);
     } catch (error) {
@@ -22,7 +23,7 @@ function NotifPage() {
 
   const fetchRead = async () => {
     try {
-      const response = await fetch('http://ae8bce2c7f4ea4b02b8364d4a9931506-593631115.eu-west-1.elb.amazonaws.com:8003/notifications/read');
+      const response = await fetch(`http://${aws_url}:8003/notifications/read`);
       const data = await response.json();
       setRead(data);
     } catch (error) {
@@ -32,7 +33,7 @@ function NotifPage() {
 
   const readNotif = async (entryId) => {
     try {
-      const response = await fetch(`http://ae8bce2c7f4ea4b02b8364d4a9931506-593631115.eu-west-1.elb.amazonaws.com:8003/notifications/${entryId}`, {
+      const response = await fetch(`http://${aws_url}:8003/notifications/${entryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -51,7 +52,7 @@ function NotifPage() {
 
   const deleteNotif = async (entryId) => {
     try {
-      const response = await fetch(`http://ae8bce2c7f4ea4b02b8364d4a9931506-593631115.eu-west-1.elb.amazonaws.com:8003/notifications/${entryId}`, {
+      const response = await fetch(`http://${aws_url}:8003/notifications/${entryId}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -66,7 +67,7 @@ function NotifPage() {
     if (!confirm('Delete ALL notifications?')) return;
 
     try {
-      const response = await fetch('http://ae8bce2c7f4ea4b02b8364d4a9931506-593631115.eu-west-1.elb.amazonaws.com:8003/notifications', {
+      const response = await fetch(`http://${aws_url}:8003/notifications`, {
         method: 'DELETE'
       });
       if (response.ok) {

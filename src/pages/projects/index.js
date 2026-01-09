@@ -1,32 +1,20 @@
 import { useState, useEffect } from 'react';
 import classes from '../../styles/projects.module.css';
 
-import { useContext } from 'react';
-import GlobalContext from "../../pages/store/globalContext"
-
 function ProjectsPage() {
-  const globalCtx = useContext(GlobalContext)
-  const aws_url = "af7f0c2a07d694801aebf0b7be50035b-1474371910.eu-west-1.elb.amazonaws.com";
-  const username = globalCtx.theGlobalObject.username;
+  const aws_url = "aeb46a8d8259045118b0803bb4bdd0e9-1361539024.eu-west-1.elb.amazonaws.com";
   const [projects, setProjects] = useState([]);
-  const [userID, setUserID] = useState(null);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
 
   useEffect(() => {
-    if (!username) return;
-    fetchUserID();
-  }, [username]);
-
-  useEffect(() => {
-    if (!userID) return;
     fetchProjects();
-  }, [userID]);
+  }, []);
 
   const fetchProjects = async () => {
       try {
         const res = await fetch(
-          `http://${aws_url}:8002/projects/${userID}`
+          `http://${aws_url}:8002/projects/user`
         );
 
         const text = await res.text();
@@ -41,28 +29,6 @@ function ProjectsPage() {
       }
     };
 
-  
-  const fetchUserID = async () => {
-    try {
-      // NOTE: likely /users/ not /user/
-      const res = await fetch(
-        `http://a62c7cf0ed6354c41891a20ac0ec7c91-132793659.eu-west-1.elb.amazonaws.com:8000/users/${username}`
-      );
-
-      const text = await res.text();
-      const data = JSON.parse(text);
-
-      if (!res.ok) throw new Error(data.detail || text);
-
-      setUserID(data.id);
-    } catch (e) {
-      console.error("Error fetching user id:", e);
-      setUserID(null);
-    }
-  };
-
-
-
   const createProject = async () => {
     if (!projectName || !projectDescription) {
       alert('Fill in both project name and description');
@@ -75,8 +41,7 @@ function ProjectsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: projectName,
-          description: projectDescription,
-          owner_id: userID
+          description: projectDescription
         })
       });
       
